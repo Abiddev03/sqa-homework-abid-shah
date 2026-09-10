@@ -1,0 +1,57 @@
+# Evaluation layer for ask.permission.ai agent responses.
+#
+# Responses are captured live by the Playwright @capture spec into
+# responses.json; this config asserts on them WITHOUT exact-text matching,
+# because a healthy LLM answer differs on every run (verified: consecutive
+# captures produced differently-worded answers to the same questions).
+#
+# Design: every assertion targets an INVARIANT — something that holds
+# across all healthy responses but breaks when the model degrades:
+#   - length window        -> catches empty, truncated, or runaway replies
+#   - error-leak check     -> catches surfaced errors and stack noise
+#   - vocabulary check     -> catches off-topic drift; keywords derived from
+#                             observed stable vocabulary across real captured
+#                             responses, not assumptions
+#
+# Deterministic-only by design: zero external judge dependency, fully
+# reproducible on any machine with no API key. The natural next layer is
+# an LLM-rubric semantic judge for deeper on-topic scoring.
+
+description: "ask.permission.ai agent response quality checks"
+
+prompts:
+  - "{{question}}"
+
+providers:
+  - id: file://response-provider.js
+
+tests:
+  - vars:
+      question: "What is Permission?"
+    assert:
+      - type: javascript
+        value: output.trim().length >= 80 && output.length <= 3000
+      - type: javascript
+        value: "!/error|something went wrong|try again later|undefined/i.test(output)"
+      - type: icontains-any
+        value: ["permission", "data", "earn", "ask"]
+
+  - vars:
+      question: "How do I earn ASK tokens?"
+    assert:
+      - type: javascript
+        value: output.trim().length >= 80 && output.length <= 3000
+      - type: javascript
+        value: "!/error|something went wrong|try again later|undefined/i.test(output)"
+      - type: icontains-any
+        value: ["earn", "ask", "token", "data", "share"]
+
+  - vars:
+      question: "What is data ownership?"
+    assert:
+      - type: javascript
+        value: output.trim().length >= 80 && output.length <= 3000
+      - type: javascript
+        value: "!/error|something went wrong|try again later|undefined/i.test(output)"
+      - type: icontains-any
+        value: ["data", "own", "control"]

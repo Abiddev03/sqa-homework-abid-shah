@@ -2,8 +2,12 @@
   "name": "abidshah",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+ "scripts": {
+    "test": "playwright test",
+    "test:chromium": "playwright test --project=chromium",
+    "test:headed": "playwright test --project=chromium --headed",
+    "capture": "CAPTURE=1 playwright test --grep @capture --project=chromium",
+    "eval": "promptfoo eval -c eval/promptfooconfig.yaml"
   },
   "keywords": [],
   "author": "",
@@ -12,7 +16,8 @@
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.2",
-    "cypress": "^13.17.0"
+    "cypress": "^13.17.0",
+    "promptfoo": "^0.123.0"
   },
   "packageManager": "pnpm@11.21.0+sha512.521705bce689924eac72f5a3587122f362689ef6571e55ba80076fd637c11132ecffada26fad4ea79c485bfddbfd3d5a2a5b05805a77e893de71ec8a6cca3bb1"
 }
