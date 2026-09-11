@@ -19,7 +19,6 @@ export async function dismissCookieBanner(page: Page): Promise<void> {
     }
 }
 
-
 export async function waitForTopicPills(page: Page): Promise<void> {
     const pill = page.getByRole('button', { name: 'What is Permission' });
     try {
@@ -39,11 +38,16 @@ export async function triggerAndAwaitReply(
     const before = await agentMessages(page).count();
 
     const apiDone = page.waitForResponse(
-        (r) => r.url().includes(ASK_API) && r.ok(),
+        (r) => r.url().includes(ASK_API),
         { timeout: timeoutMs },
     );
     await trigger();
-    await apiDone;
+    const response = await apiDone;
+    if (!response.ok()) {
+        throw new Error(
+            `Ask API returned ${response.status()} — live-service failure, not a UI defect`,
+        );
+    }
 
     const bubble = agentMessages(page).nth(before); // first new agent bubble
     await bubble.waitFor({ state: 'visible', timeout: 10000 });
